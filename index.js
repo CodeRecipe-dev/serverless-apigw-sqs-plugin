@@ -56,7 +56,7 @@ class ServerlessApiGWSqsPlugin {
   beforeDeployResources() {
     this.setCloudFormation()
     return new Promise((resolve, reject) => {
-      fs.readFile('template.yml', 'utf8', (err, contents) => {
+      fs.readFile(__dirname + '/' + 'template.yml', 'utf8', (err, contents) => {
         var stackName = this.getStackName(this.options.stage, this.serverless.service.service)
         var apiEndpoint = this.serverless.service.custom.apiGwSqs.apiEndpoint
         var queueName = this.serverless.service.custom.apiGwSqs.queueName
