@@ -13,8 +13,8 @@ Add plugin to your serverless.yml file.
 Set API endpoint name and SQS Queue name under custom parameters in your serverless.yml file:
 
     custom:
-    	apiGwSqs:
-    		apiEndpoint: 'buy-order'
-    		queueName: 'OrderQueue'
-    		
+      apiGwSqs:
+        apiEndpoint: 'buy-order'
+        queueName: 'OrderQueue'
+
 API endpoint connected to the Queue that is created will be listed under "endpoints" in the output of sls deploy.
