@@ -24,4 +24,5 @@ Set API endpoint name and SQS Queue name under custom parameters in your serverl
         queueName: '<queue name goes here, put .fifo as suffix if queue needs to be a fifo queue>'
 
 Note: The queueName can only include alphanumeric characters, hyphens, or underscores. 1 to 80 in length.
+
 API endpoint that is created will be listed under "endpoints" in the output of sls deploy.
