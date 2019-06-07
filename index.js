@@ -77,8 +77,8 @@ class ServerlessApiGWSqsPlugin {
           TemplateBody: contents,
         };
         if (queueName.includes(".")) {
-          this.serverless.cli.log("[CodeRecipe ApiGW SQS Plugin] QueueName Error: Can only include alphanumeric characters, hyphens, or underscores. 1 to 80 in length")
-          resolve();
+          console.log("[CodeRecipe ApiGW SQS Plugin] QueueName Error: Can only include alphanumeric characters, hyphens, or underscores. 1 to 80 in length")
+          reject()
         }
         this.cloudformation.createStack(params, (err, data) => {
           if (err) {
