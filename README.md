@@ -1,6 +1,8 @@
 # Serverless-APIGW-SQS-Plugin
 
 ![npm version](https://badge.fury.io/js/serverless-apigw-sqs-plugin.svg) ![serverless](http://public.serverless.com/badges/v3.svg)
+
+A Serverless plugin that creates an AWS API Gateway Resource connected to an AWS Simple Queue Service (SQS) without the use of a lambda.
 ## Installation
 `npm install serverless-apigw-sqs-plugin`
 ## Usage
