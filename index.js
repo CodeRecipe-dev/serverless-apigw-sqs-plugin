@@ -28,14 +28,17 @@ class ServerlessApiGWSqsPlugin {
   setApiEndpoint() {
     this.setCloudFormation()
     var stackName = this.getStackName(this.options.stage, this.serverless.service.service)
-    return new Promise((resolve, reject) => {
-      this.cloudformation.describeStacks({StackName: stackName}, function(err, data) {
-        if(!err) {
-          console.log("  POST - "+data["Stacks"][0]["Outputs"][0]["OutputValue"]);
-          resolve();
-        }
+    var queueName = this.serverless.service.custom.apiGwSqs.queueName
+    if (!queueName.includes(".")) {
+      return new Promise((resolve, reject) => {
+        this.cloudformation.describeStacks({StackName: stackName}, function(err, data) {
+          if(!err) {
+            console.log("  POST - "+data["Stacks"][0]["Outputs"][0]["OutputValue"]);
+            resolve();
+          }
+        });
       });
-    });
+    }
   }
   deleteStack() {
     this.setCloudFormation()
@@ -73,6 +76,10 @@ class ServerlessApiGWSqsPlugin {
           StackName: stackName,
           TemplateBody: contents,
         };
+        if (queueName.includes(".")) {
+          this.serverless.cli.log("[CodeRecipe ApiGW SQS Plugin] QueueName Error: Can only include alphanumeric characters, hyphens, or underscores. 1 to 80 in length")
+          resolve();
+        }
         this.cloudformation.createStack(params, (err, data) => {
           if (err) {
             if(err.code == 'AlreadyExistsException') {
