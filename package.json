@@ -24,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/CodeRecipe-dev/serverless-apigw-sqs-plugin/issues"
   },
-  "homepage": "https://github.com/CodeRecipe-dev/serverless-apigw-sqs-plugin#readme"
+  "homepage": "https://github.com/CodeRecipe-dev/serverless-apigw-sqs-plugin#readme",
+  "dependencies": {
+    "aws-sdk": "^2.470.0"
+  }
 }
