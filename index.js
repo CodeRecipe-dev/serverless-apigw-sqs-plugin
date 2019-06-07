@@ -48,9 +48,6 @@ class ServerlessApiGWSqsPlugin {
       if (err) {
         this.serverless.cli.log("[CodeRecipe ApiGW SQS Plugin] Error: ", err.message);
       }
-      else {
-        this.serverless.cli.log("[CodeRecipe ApiGW SQS Plugin] Deleted ApiGW -> SQS");
-      }
     }.bind(this));
   }
   getStackName(stage, serviceName) {
