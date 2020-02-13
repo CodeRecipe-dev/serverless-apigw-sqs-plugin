@@ -43,7 +43,7 @@ class ServerlessApiGWSqsPlugin {
   deleteStack() {
     this.setCloudFormation()
     var stackName = this.getStackName(this.options.stage, this.serverless.service.service)
-    
+
     this.cloudformation.deleteStack({StackName: stackName}, function (err, data) {
       if (err) {
         this.serverless.cli.log("[CodeRecipe ApiGW SQS Plugin] Error: ", err.message);
@@ -60,12 +60,15 @@ class ServerlessApiGWSqsPlugin {
         var stackName = this.getStackName(this.options.stage, this.serverless.service.service)
         var apiEndpoint = this.serverless.service.custom.apiGwSqs.apiEndpoint
         var queueName = this.serverless.service.custom.apiGwSqs.queueName
+        var queueDelay = this.serverless.service.custom.apiGwSqs.queueDelay
         var replaceStageName = new RegExp('STAGE_NAME', 'g');
         var replaceApiEndpoint = new RegExp('API_ENDPOINT', 'g');
         var replaceQueueName = new RegExp('QUEUE_NAME', 'g');
+        var replaceQueueDelay = new RegExp('QUEUE_DELAY', 'g');
         contents = contents.replace(replaceStageName, this.options.stage);
         contents = contents.replace(replaceApiEndpoint, apiEndpoint);
         contents = contents.replace(replaceQueueName, queueName);
+        contents = contents.replace(replaceQueueDelay, queueDelay);
         var params = {
           Capabilities: [
             'CAPABILITY_IAM'
@@ -91,7 +94,7 @@ class ServerlessApiGWSqsPlugin {
                     this.cloudformation.waitFor('stackCreateComplete', {StackName: stackName}, (err, data) => {
                       if (err) {
                         console.log(err.message);
-                      } 
+                      }
                       else {
                         this.serverless.cli.log("[CodeRecipe ApiGW SQS Plugin] Updated ApiGW -> SQS")
                       }
@@ -109,7 +112,7 @@ class ServerlessApiGWSqsPlugin {
             this.cloudformation.waitFor('stackCreateComplete', {StackName: stackName}, (err, data) => {
               if (err) {
                 console.log(err.message);
-              } 
+              }
               else {
                 this.serverless.cli.log("[CodeRecipe ApiGW SQS Plugin] Created Api GW -> SQS")
               }

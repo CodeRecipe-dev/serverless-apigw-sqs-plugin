@@ -3,6 +3,7 @@ Resources:
     Type: "AWS::SQS::Queue"
     Properties:
       QueueName: STAGE_NAME-QUEUE_NAME
+      DelaySeconds : QUEUE_DELAY
 
   ProxyApi:
     Type: AWS::ApiGateway::RestApi
@@ -53,10 +54,10 @@ Resources:
               "application/json": ""
         Uri: !Sub arn:aws:apigateway:us-east-1:sqs:path/${AWS::AccountId}/${SQSQueue.QueueName}
 
-  APIGatewayDeployment: 
+  APIGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn: SQSAPIMethod
-    Properties: 
+    Properties:
       RestApiId: !Sub "${ProxyApi}"
       StageName: STAGE_NAME
 
@@ -72,7 +73,7 @@ Resources:
                 - apigateway.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - 
+        -
           PolicyName: STAGE_NAME-QUEUE_NAME-policy
           PolicyDocument:
             Version: '2012-10-17'
