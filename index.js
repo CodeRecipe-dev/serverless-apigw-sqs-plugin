@@ -55,17 +55,29 @@ class ServerlessApiGWSqsPlugin {
   }
   beforeDeployResources() {
     this.setCloudFormation()
+
+    const fifoQueueYaml = 'fifo-queue-template.yml';
+    const standardQueueYaml = 'standard-queue-template.yml';
+    const templateType =  this.serverless.service.custom.apiGwSqs.fifoQueue ? fifoQueueYaml :standardQueueYaml;
+
     return new Promise((resolve, reject) => {
-      fs.readFile(__dirname + '/' + 'template.yml', 'utf8', (err, contents) => {
+      fs.readFile(__dirname + '/' + templateType , 'utf8', (err, contents) => {
         var stackName = this.getStackName(this.options.stage, this.serverless.service.service)
         var apiEndpoint = this.serverless.service.custom.apiGwSqs.apiEndpoint
         var queueName = this.serverless.service.custom.apiGwSqs.queueName
+        var fifoQueueType = this.serverless.service.custom.apiGwSqs.fifoQueue
+        var contentBasedDeduplication = this.serverless.service.custom.apiGwSqs.contentBasedDeduplication
         var replaceStageName = new RegExp('STAGE_NAME', 'g');
         var replaceApiEndpoint = new RegExp('API_ENDPOINT', 'g');
         var replaceQueueName = new RegExp('QUEUE_NAME', 'g');
+        var replaceFifoType = new RegExp('FIFO_TYPE', 'g');
+        var replaceContentDeduplication = new RegExp('CONTENT_BASED_DEDUPLICATION')
         contents = contents.replace(replaceStageName, this.options.stage);
         contents = contents.replace(replaceApiEndpoint, apiEndpoint);
         contents = contents.replace(replaceQueueName, queueName);
+        contents = contents.replace(replaceFifoType, fifoQueueType);
+        contents = contents.replace(replaceContentDeduplication, contentBasedDeduplication);
+
         var params = {
           Capabilities: [
             'CAPABILITY_IAM'
@@ -73,10 +85,18 @@ class ServerlessApiGWSqsPlugin {
           StackName: stackName,
           TemplateBody: contents,
         };
-        if (queueName.includes(".")) {
-          console.log("[CodeRecipe ApiGW SQS Plugin] QueueName Error: Can only include alphanumeric characters, hyphens, or underscores. 1 to 80 in length")
-          reject()
+        
+        const fifoName = '.fifo';
+        if (fifoQueueType && !queueName.endsWith(fifoName)) { 
+          console.log("[CodeRecipe ApiGW SQS Plugin] QueueName Error: Fifo Queues MUST end in '.fifo' eg 'testQueue.fifo'. Remember to only include alphanumeric characters, hyphens, or underscores. 1 to 80 in length");
+          reject();
         }
+        
+        if (fifoQueueType === undefined && queueName.includes(".")) {
+          console.log("[CodeRecipe ApiGW SQS Plugin] QueueName Error: Can only include alphanumeric characters, hyphens, or underscores. 1 to 80 in length");
+          reject();
+        }
+
         this.cloudformation.createStack(params, (err, data) => {
           if (err) {
             if(err.code == 'AlreadyExistsException') {
