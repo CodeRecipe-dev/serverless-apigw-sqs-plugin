@@ -1,0 +1,96 @@
+Resources:
+  SQSQueue:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: STAGE_NAME-QUEUE_NAME
+      FifoQueue: FIFO_TYPE
+      ContentBasedDeduplication: CONTENT_BASED_DEDUPLICATION
+
+  ProxyApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: STAGE_NAME-QUEUE_NAME-ApiGateway
+
+  APIGatewayResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - "ProxyApi"
+          - "RootResourceId"
+      PathPart: "API_ENDPOINT"
+      RestApiId:
+        Ref: ProxyApi
+
+  SQSAPIMethod:
+    Type: AWS::ApiGateway::Method
+    DependsOn: SQSQueue
+    Properties:
+      RestApiId:
+        Ref: ProxyApi
+      ResourceId:
+        Ref: APIGatewayResource
+      HttpMethod: "POST"
+      MethodResponses:
+        -
+          StatusCode: "200"
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Origin": true
+      AuthorizationType: "NONE"
+      Integration:
+        Type: AWS
+        Credentials: !Sub "${APIGatewaySQSIAM.Arn}"
+        RequestParameters:
+          "integration.request.header.Content-Type": "'application/x-www-form-urlencoded'"
+        IntegrationHttpMethod: POST
+        RequestTemplates:
+          "application/json": "Action=SendMessage&MessageBody=$input.body&MessageDeduplicationId=$input.params('MessageDeduplicationId')&MessageGroupId=$input.params('MessageGroupId')"
+        PassthroughBehavior: Never
+        IntegrationResponses:
+          -
+            StatusCode: "200"
+            ResponseParameters:
+              "method.response.header.Access-Control-Allow-Origin": "'*'"
+            ResponseTemplates:
+              "application/json": ""
+        Uri: !Sub arn:aws:apigateway:us-east-1:sqs:path/${AWS::AccountId}/${SQSQueue.QueueName}
+
+  APIGatewayDeployment: 
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: SQSAPIMethod
+    Properties: 
+      RestApiId: !Sub "${ProxyApi}"
+      StageName: STAGE_NAME
+
+  APIGatewaySQSIAM:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - 
+          PolicyName: STAGE_NAME-QUEUE_NAME-policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Resource: "*"
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+              - Effect: Allow
+                Resource:
+                  - !Sub "${SQSQueue.Arn}"
+                Action:
+                  - "sqs:SendMessage"
+
+Outputs:
+  ApiGwUrl:
+    Value: !Sub "https://${ProxyApi}.execute-api.${AWS::Region}.amazonaws.com/STAGE_NAME/API_ENDPOINT"

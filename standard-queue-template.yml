@@ -42,7 +42,7 @@ Resources:
           "integration.request.header.Content-Type": "'application/x-www-form-urlencoded'"
         IntegrationHttpMethod: POST
         RequestTemplates:
-          "application/json": "Action=SendMessage&MessageBody=$input.body"
+          "application/json": "Action=SendMessage&MessageBody=$input.body&MessageDeduplicationId=$input.params('MessageDeduplicationId')&MessageGroupId=$input.params('MessageGroupId')"
         PassthroughBehavior: Never
         IntegrationResponses:
           -
