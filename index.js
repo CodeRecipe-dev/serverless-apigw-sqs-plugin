@@ -7,13 +7,6 @@ class ServerlessApiGWSqsPlugin {
     this.serverless = serverless;
     this.options = options;
     this.apiEndpointUrl = "";
-    this.commands = {
-      deploy: {
-        lifecycleEvents: [
-        'resources'
-        ]
-      },
-    };
 
     this.hooks = {
       'before:deploy:deploy': this.beforeDeployResources.bind(this),
